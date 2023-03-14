@@ -2,6 +2,7 @@
 import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";  // next/routerからuseRouterというフックを取り込む
+import { ParsedUrlQuery } from 'querystring'
 
 type PostProps = {
   id: string
@@ -32,7 +33,7 @@ const Post: NextPage<PostProps> = (props) => {
 
 // getStaticPathsは生成したいページのパスパラメータの組み合わせを返す
 // このファイルはpages/posts/[id].tsxなので、パスパラメータとしてidの値を返す必要がある
-export const getStaticPaths: GetStaticPaths = async() => {
+export const getStaticPaths: GetStaticPaths = async () => {
   // それぞれのページのパスパラメータをまとめたもの
   const paths = [
     {
@@ -53,22 +54,21 @@ export const getStaticPaths: GetStaticPaths = async() => {
   ]
 
   // fallbackをfalseにすると、pathsで定義されたページ以外は404ページを表示する
-  return { paths, fallback: false}
+  return { paths, fallback: false }
+}
+
+// パラメータの型を定義
+interface PostParams extends ParsedUrlQuery {
+  id: string
 }
 
 // getStaticPaths実行後にそれぞれのパスに対してgetStaticPropsが実行される
-export const getStaticProps: GetStaticProps<PostProps> = async (context) => {
-  // context.paramsにパスパラメータの値が入っている
-  // context.params['id']はstring | string[]型なので
-  // 値が配列かどうかで場合分けをする
-  const id = Array.isArray(context.params['id'])
-    ? context.params['id'][0]
-    : context.params['id']
-  
+export const getStaticProps: GetStaticProps<PostProps, PostParams> = async (context) => {
   return {
     props: {
-      id,
+      id: context.params!['id'],
     },
   }
 }
+
 export default Post
